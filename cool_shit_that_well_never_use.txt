@@ -1,0 +1,12 @@
+try {
+            System.out.println(i);
+            // Calls on each server tick
+            i += 0.05f;
+
+            var player = event.getServer().getPlayerList().getPlayerByName("Dev");
+            var pos = player.getOnPos();
+            player.moveTo(pos.getX(), 65 + 5 * Math.sin(i), pos.getZ());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
