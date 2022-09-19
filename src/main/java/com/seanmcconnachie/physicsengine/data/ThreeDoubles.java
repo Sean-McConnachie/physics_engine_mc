@@ -1,6 +1,6 @@
 package com.seanmcconnachie.physicsengine.data;
 
-public class ThreeDoubles {
+public class ThreeDoubles implements java.io.Serializable {
     private final double x;
     private final double y;
     private final double z;

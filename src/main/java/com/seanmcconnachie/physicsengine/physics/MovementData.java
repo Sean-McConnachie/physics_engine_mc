@@ -14,7 +14,7 @@ public class MovementData implements java.io.Serializable {
         this.Acceleration = acceleration;
     }
 
-    private int calculateRelativeDistance() {
+    public int calculateRelativeDistance() {
         // s = ut + 1/2at^2
         // ticks -> seconds = tick * 0.05
         return (int) Math.round((this.initialVelocity * this.Tick * 0.05) + (0.5 * this.Acceleration * Math.pow(this.Tick * 0.05, 2)));
@@ -32,6 +32,10 @@ public class MovementData implements java.io.Serializable {
     public void onImpact(int newPos) {
         this.lastPos = newPos;
         this.Tick = 0;
+    }
+
+    public long getLastPos() {
+        return this.lastPos;
     }
 
     public double getInitialVelocity() {

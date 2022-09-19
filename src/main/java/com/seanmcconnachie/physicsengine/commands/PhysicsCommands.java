@@ -38,20 +38,6 @@ public class PhysicsCommands {
                         ItemArgument.getItem(command, "item")
         ))))));
 
-//        dispatcher.register(Commands.literal("physics")
-//                .then(Commands.literal("block")
-//                .then(Commands.argument("pos", BlockPosArgument.blockPos())
-//                .then(Commands.argument("item", ItemArgument.item(context))
-//                .then(Commands.argument("initial_v", Vec3Argument.vec3())
-//                .then(Commands.argument("gravity", Vec3Argument.vec3())
-//                .executes((command) -> addPhysicsBlock(
-//                        command.getSource(),
-//                        BlockPosArgument.getLoadedBlockPos(command, "pos"),
-//                        ItemArgument.getItem(command, "item"),
-//                        Vec3Argument.getVec3(command, "gravity"),
-//                        Vec3Argument.getVec3(command, "initial_v")
-//        ))))))));
-
         dispatcher.register(Commands.literal("physics")
                 .then(Commands.literal("block")
                     .then(Commands.argument("pos", BlockPosArgument.blockPos())
@@ -63,13 +49,59 @@ public class PhysicsCommands {
                                         new ThreeDoubles(0, 0, 0),
                                         new ThreeDoubles(0, -9.81f, 0)
                                 ))
+                        .then(Commands.argument("Xv", DoubleArgumentType.doubleArg())
+                            .then(Commands.argument("Yv", DoubleArgumentType.doubleArg())
+                                .then(Commands.argument("Zv", DoubleArgumentType.doubleArg())
+                                        .executes((command) -> addPhysicsBlock(
+                                                command.getSource(),
+                                                BlockPosArgument.getLoadedBlockPos(command, "pos"),
+                                                ItemArgument.getItem(command, "item"),
+                                                new ThreeDoubles(
+                                                        DoubleArgumentType.getDouble(command, "Xv"),
+                                                        DoubleArgumentType.getDouble(command, "Yv"),
+                                                        DoubleArgumentType.getDouble(command, "Zv")
+                                                ),
+                                                new ThreeDoubles(0, -9.81f, 0)
+                                        ))
+                                        .then(Commands.argument("Xg", DoubleArgumentType.doubleArg())
+                                                .then(Commands.argument("Yg", DoubleArgumentType.doubleArg())
+                                                        .then(Commands.argument("Zg", DoubleArgumentType.doubleArg())
+                                                                .executes((command) -> addPhysicsBlock(
+                                                                        command.getSource(),
+                                                                        BlockPosArgument.getLoadedBlockPos(command, "pos"),
+                                                                        ItemArgument.getItem(command, "item"),
+                                                                        new ThreeDoubles(
+                                                                                DoubleArgumentType.getDouble(command, "Xv"),
+                                                                                DoubleArgumentType.getDouble(command, "Yv"),
+                                                                                DoubleArgumentType.getDouble(command, "Zv")
+                                                                        ),
+                                                                        new ThreeDoubles(
+                                                                                DoubleArgumentType.getDouble(command, "Xg"),
+                                                                                DoubleArgumentType.getDouble(command, "Yg"),
+                                                                                DoubleArgumentType.getDouble(command, "Zg")
+        )))))))))))));
+
+        dispatcher.register(Commands.literal("physics")
+                .then(Commands.literal("box")
+                    .then(Commands.argument("pos", BlockPosArgument.blockPos())
+                        .then(Commands.argument("item1", ItemArgument.item(context))
+                        .then(Commands.argument("item2", ItemArgument.item(context))
+                                .executes((command) -> addPhysicsBox(
+                                        command.getSource(),
+                                        BlockPosArgument.getLoadedBlockPos(command, "pos"),
+                                        ItemArgument.getItem(command, "item1"),
+                                        ItemArgument.getItem(command, "item2"),
+                                        new ThreeDoubles(0, 0, 0),
+                                        new ThreeDoubles(0, -9.81f, 0)
+                                ))
                             .then(Commands.argument("Xv", DoubleArgumentType.doubleArg())
                                 .then(Commands.argument("Yv", DoubleArgumentType.doubleArg())
                                     .then(Commands.argument("Zv", DoubleArgumentType.doubleArg())
-                                        .executes((command) -> addPhysicsBlock(
+                                        .executes((command) -> addPhysicsBox(
                                             command.getSource(),
                                             BlockPosArgument.getLoadedBlockPos(command, "pos"),
-                                            ItemArgument.getItem(command, "item"),
+                                            ItemArgument.getItem(command, "item1"),
+                                            ItemArgument.getItem(command, "item2"),
                                             new ThreeDoubles(
                                                 DoubleArgumentType.getDouble(command, "Xv"),
                                                 DoubleArgumentType.getDouble(command, "Yv"),
@@ -80,10 +112,11 @@ public class PhysicsCommands {
                                         .then(Commands.argument("Xg", DoubleArgumentType.doubleArg())
                                             .then(Commands.argument("Yg", DoubleArgumentType.doubleArg())
                                                 .then(Commands.argument("Zg", DoubleArgumentType.doubleArg())
-                                                    .executes((command) -> addPhysicsBlock(
+                                                    .executes((command) -> addPhysicsBox(
                                                         command.getSource(),
                                                         BlockPosArgument.getLoadedBlockPos(command, "pos"),
-                                                        ItemArgument.getItem(command, "item"),
+                                                        ItemArgument.getItem(command, "item1"),
+                                                        ItemArgument.getItem(command, "item2"),
                                                         new ThreeDoubles(
                                                             DoubleArgumentType.getDouble(command, "Xv"),
                                                             DoubleArgumentType.getDouble(command, "Yv"),
@@ -93,7 +126,7 @@ public class PhysicsCommands {
                                                             DoubleArgumentType.getDouble(command, "Xg"),
                                                             DoubleArgumentType.getDouble(command, "Yg"),
                                                             DoubleArgumentType.getDouble(command, "Zg")
-                                                        )))))))))))));
+                                                        ))))))))))))));
 
         // Pause commands ==============================================================================================
         dispatcher.register(Commands.literal("physics")
@@ -149,6 +182,27 @@ public class PhysicsCommands {
         return Command.SINGLE_SUCCESS;
     }
 
+    private static int deleteStructures(CommandSourceStack source, boolean changeAll) throws CommandSyntaxException {
+        UUID playerId = source.getPlayerOrException().getUUID();
+        for (int counter = PhysicsEngine.movingStructures.size() - 1; counter >= 0; counter--) {
+            MovingStructure structure = PhysicsEngine.movingStructures.get(counter);
+            if (changeAll || structure.getOwningPlayerId() == playerId) {
+                PhysicsEngine.movingStructures.remove(counter);
+            }
+        }
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int setStops(CommandSourceStack source, boolean changeAll, boolean stop) throws CommandSyntaxException {
+        UUID playerId = source.getPlayerOrException().getUUID();
+        for (MovingStructure structure : PhysicsEngine.movingStructures) {
+            if (changeAll || structure.getOwningPlayerId() == playerId) {
+                structure.setStop(stop);
+            }
+        }
+        return Command.SINGLE_SUCCESS;
+    }
+
     private static int addPhysicsBlock(CommandSourceStack source, BlockPos pos, ItemInput item, ThreeDoubles initialVels, ThreeDoubles gravity) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
 
@@ -172,24 +226,32 @@ public class PhysicsCommands {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int setStops(CommandSourceStack source, boolean changeAll, boolean stop) throws CommandSyntaxException {
-        UUID playerId = source.getPlayerOrException().getUUID();
-        for (MovingStructure structure : PhysicsEngine.movingStructures) {
-            if (changeAll || structure.getOwningPlayerId() == playerId) {
-                structure.setStop(stop);
-            }
-        }
-        return Command.SINGLE_SUCCESS;
-    }
+    private static int addPhysicsBox(CommandSourceStack source, BlockPos pos, ItemInput item1, ItemInput item2, ThreeDoubles initialVels, ThreeDoubles gravity) throws CommandSyntaxException {
+        ServerPlayer player = source.getPlayerOrException();
 
-    private static int deleteStructures(CommandSourceStack source, boolean changeAll) throws CommandSyntaxException {
-        UUID playerId = source.getPlayerOrException().getUUID();
-        for (int counter = PhysicsEngine.movingStructures.size() - 1; counter >= 0; counter--) {
-            MovingStructure structure = PhysicsEngine.movingStructures.get(counter);
-            if (changeAll || structure.getOwningPlayerId() == playerId) {
-                PhysicsEngine.movingStructures.remove(counter);
-            }
-        }
+        MovementData xMovement = new MovementData(pos.getX(), initialVels.getX(), gravity.getX());
+        MovementData yMovement = new MovementData(pos.getY(), initialVels.getY(), gravity.getY());
+        MovementData zMovement = new MovementData(pos.getZ(), initialVels.getZ(), gravity.getZ());
+
+        MovementVector movementV = new MovementVector(xMovement, yMovement, zMovement);
+        BlockState blockState1 = ((BlockItem) item1.getItem()).getBlock().defaultBlockState();
+        BlockState blockState2 = ((BlockItem) item2.getItem()).getBlock().defaultBlockState();
+        int blockId1 = Block.getId(blockState1);
+        int blockId2 = Block.getId(blockState2);
+        int[][][] blockIds = new int[][][]{
+                {{blockId1, blockId2, blockId1}, {blockId1, -1, blockId2}, {blockId1, blockId2, blockId2}},
+                {{blockId1, -1, blockId1}, {-1, -1, -1}, {blockId2, -1, blockId1}},
+                {{blockId2, blockId1, blockId1}, {blockId2, -1, blockId1}, {blockId2, blockId2, blockId2}}
+        };
+
+        MovingStructure structure = new MovingStructure(
+                player.level,
+                player,
+                movementV,
+                blockIds);
+        PhysicsEngine.movingStructures.add(structure);
+
+        System.out.println("Created and dropping structure.");
         return Command.SINGLE_SUCCESS;
     }
 }

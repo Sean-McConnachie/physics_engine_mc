@@ -11,4 +11,10 @@ public class MovementVector implements java.io.Serializable {
         this.y = y;
         this.z = z;
     }
+
+    public void incrementAll() {
+        this.x.incrementTick();
+        this.y.incrementTick();
+        this.z.incrementTick();
+    }
 }

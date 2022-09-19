@@ -1,6 +1,6 @@
 package com.seanmcconnachie.physicsengine.data;
 
-public class ThreeInts {
+public class ThreeInts implements java.io.Serializable {
     private final int x;
     private final int y;
     private final int z;
