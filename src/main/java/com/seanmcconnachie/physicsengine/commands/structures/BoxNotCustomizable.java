@@ -4,11 +4,8 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.seanmcconnachie.physicsengine.PhysicsEngine;
+import com.seanmcconnachie.physicsengine.physics.*;
 import com.seanmcconnachie.physicsengine.simpledata.ThreeFloats;
-import com.seanmcconnachie.physicsengine.physics.MovementData;
-import com.seanmcconnachie.physicsengine.physics.MovementVector;
-import com.seanmcconnachie.physicsengine.physics.MovingStructure;
-import com.seanmcconnachie.physicsengine.physics.RotatePointArray;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -76,28 +73,29 @@ public class BoxNotCustomizable {
         ServerPlayer player = source.getPlayerOrException();
 
         ThreeFloats rotation = new ThreeFloats((float) rotationVec.x(), (float) rotationVec.y(), (float) rotationVec.z());
-        MovementVector movementV = new MovementVector(
-                new MovementData(pos.getX(), initialVelsVec.x(), gravityVec.x()),
-                new MovementData(pos.getY(), initialVelsVec.y(), gravityVec.y()),
-                new MovementData(pos.getZ(), initialVelsVec.z(), gravityVec.z())
+        MovementData movementV = new MovementData(
+                new MovementDataAxis(pos.getX(), initialVelsVec.x(), gravityVec.x()),
+                new MovementDataAxis(pos.getY(), initialVelsVec.y(), gravityVec.y()),
+                new MovementDataAxis(pos.getZ(), initialVelsVec.z(), gravityVec.z())
         );
         BlockState blockState1 = ((BlockItem) item1.getItem()).getBlock().defaultBlockState();
         BlockState blockState2 = ((BlockItem) item2.getItem()).getBlock().defaultBlockState();
         int blockId1 = Block.getId(blockState1);
         int blockId2 = Block.getId(blockState2);
         int[][][] blockIds = new int[][][]{
-                {{blockId1, blockId2, blockId1}, {blockId1, -1, blockId2}, {blockId1, blockId2, blockId2}},
-                {{blockId1, -1, blockId1}, {-1, -1, -1}, {blockId2, -1, blockId1}},
-                {{blockId2, blockId1, blockId1}, {blockId2, -1, blockId1}, {blockId2, blockId2, blockId2}}
+                {{blockId1, blockId2, blockId1, blockId1, blockId2}, {blockId1, 0, blockId2, blockId1, blockId2}, {blockId1, blockId2, blockId2, blockId1, blockId2}},
+                {{blockId1, 0, blockId1, blockId1, blockId2}, {0, 0, 0, 0, 0}, {blockId2, 0, blockId1, blockId1, blockId2}},
+                {{blockId2, blockId1, blockId1, blockId1, blockId2}, {blockId2, 0, blockId1, blockId1, blockId2}, {blockId2, blockId2, blockId2, blockId1, blockId2}},
+                {{blockId2, blockId1, blockId1, blockId1, blockId1}, {blockId2, 0, blockId1, blockId1, blockId1}, {blockId2, blockId2, blockId2, blockId1, blockId1}}
         };
 
-        blockIds = RotatePointArray.rotatePoints(blockIds, rotation);
+        PointsStorage points = new PointsStorage(blockIds);
 
         MovingStructure structure = new MovingStructure(
                 player.level,
                 player,
                 movementV,
-                blockIds);
+                points);
         PhysicsEngine.movingStructures.add(structure);
 
         System.out.println("Created and dropping structure.");

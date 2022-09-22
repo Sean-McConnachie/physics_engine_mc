@@ -10,17 +10,17 @@ public class MovementProperties implements java.io.Serializable {
     private final String worldLevel;
     private final UUID owningPlayerId;
 
-    public MovementVector movementVector;
+    public MovementData movementData;
 
     // Constructor
     public MovementProperties(
             Level worldLevel,
             Player owningPlayer,
-            MovementVector movementV
+            MovementData movementV
     ) {
         this.worldLevel = worldLevel.dimension().location().toString();
         this.owningPlayerId = owningPlayer.getUUID();
-        this.movementVector = movementV;
+        this.movementData = movementV;
     }
 
     // Getters and Setters =============================================================================================

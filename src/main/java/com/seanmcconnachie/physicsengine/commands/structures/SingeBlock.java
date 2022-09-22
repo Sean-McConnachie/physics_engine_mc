@@ -4,9 +4,8 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.seanmcconnachie.physicsengine.PhysicsEngine;
-import com.seanmcconnachie.physicsengine.physics.MovementData;
-import com.seanmcconnachie.physicsengine.physics.MovementVector;
-import com.seanmcconnachie.physicsengine.physics.MovingStructure;
+import com.seanmcconnachie.physicsengine.physics.*;
+import com.seanmcconnachie.physicsengine.simpledata.ThreeLongs;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -57,20 +56,21 @@ public class SingeBlock {
     private static int addPhysicsBlock(CommandSourceStack source, BlockPos pos, ItemInput item, Vec3 initialVels, Vec3 gravity) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
 
-        MovementVector movementV = new MovementVector(
-                new MovementData(pos.getX(), initialVels.x(), gravity.x()),
-                new MovementData(pos.getY(), initialVels.y(), gravity.y()),
-                new MovementData(pos.getZ(), initialVels.z(), gravity.z())
+        MovementData movementV = new MovementData(
+                new MovementDataAxis(pos.getX(), initialVels.x(), gravity.x()),
+                new MovementDataAxis(pos.getY(), initialVels.y(), gravity.y()),
+                new MovementDataAxis(pos.getZ(), initialVels.z(), gravity.z())
         );
         BlockState blockState = ((BlockItem) item.getItem()).getBlock().defaultBlockState();
         int blockId = Block.getId(blockState);
         int[][][] blockIds = new int[][][]{{{blockId}}};
+        PointsStorage points = new PointsStorage(blockIds);
 
         MovingStructure structure = new MovingStructure(
                 player.level,
                 player,
                 movementV,
-                blockIds);
+                points);
         PhysicsEngine.movingStructures.add(structure);
 
         System.out.println("Created and dropping structure.");
