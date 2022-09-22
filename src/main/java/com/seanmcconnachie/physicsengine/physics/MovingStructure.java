@@ -1,6 +1,6 @@
 package com.seanmcconnachie.physicsengine.physics;
 
-import com.seanmcconnachie.physicsengine.data.ThreeLongs;
+import com.seanmcconnachie.physicsengine.simpledata.ThreeLongs;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -13,6 +13,7 @@ import java.util.Objects;
 public class MovingStructure extends MovementProperties implements MovementBase, java.io.Serializable {
     private final int[][][] blockIds;
     private ThreeLongs prevAbsPos;
+    private boolean firstDraw = true;
 
     // Constructor
     public MovingStructure(
@@ -64,72 +65,80 @@ public class MovingStructure extends MovementProperties implements MovementBase,
     }
 
     private void updateBlocks(Level worldLevel) {
-
         final ThreeLongs currAbsPos = new ThreeLongs(
                 this.movementVector.x.calculateAbsoluteDistance(),
                 this.movementVector.y.calculateAbsoluteDistance(),
                 this.movementVector.z.calculateAbsoluteDistance()
         );
-
         final ThreeLongs currRelIncreases = currAbsPos.subtract(this.prevAbsPos);
-
 
         for (int x = 0; x < this.blockIds.length; x++) {
             for (int y = 0; y < blockIds[x].length; y++) {
                 for (int z = 0; z < blockIds[x][y].length; z++) {
-                    if (
-                            x - currRelIncreases.getX() < 0
-                            || x - currRelIncreases.getX() >= this.blockIds.length
-                            || y - currRelIncreases.getY() < 0
-                            || y - currRelIncreases.getY() >= this.blockIds[x].length
-                            || z - currRelIncreases.getZ() < 0
-                            || z - currRelIncreases.getZ() >= this.blockIds[x][y].length
-                    ) {
-                        this.unDrawBlock(
+                    if (firstDraw) {
+                        this.drawBlock(
                                 worldLevel,
-                                currAbsPos.getX() + x - currRelIncreases.getX(),
-                                currAbsPos.getY() + y - currRelIncreases.getY(),
-                                currAbsPos.getZ() + z - currRelIncreases.getZ()
+                                currAbsPos.x() + x,
+                                currAbsPos.y() + y,
+                                currAbsPos.z() + z,
+                                this.blockIds[x][y][z]
                         );
-                    }
-                    if (
-                            x < blockIds.length - currRelIncreases.getX()
-                            && x + currRelIncreases.getX() < blockIds.length
-                            && x + currRelIncreases.getX() >= 0
-
-                            && y < blockIds[x].length - currRelIncreases.getY()
-                            && y + currRelIncreases.getY() < blockIds[x].length
-                            && y + currRelIncreases.getY() >= 0
-
-                            && z < blockIds[x][y].length - currRelIncreases.getZ()
-                            && z + currRelIncreases.getZ() < blockIds[x][y].length
-                            && z + currRelIncreases.getZ() >= 0
-                    ) {
-                        if (blockIds[x][y][z] != blockIds
-                                [(int) (x + currRelIncreases.getX())]
-                                [(int) (y + currRelIncreases.getY())]
-                                [(int) (z + currRelIncreases.getZ())]
+                    } else {
+                        if (
+                                x - currRelIncreases.x() < 0
+                                        || x - currRelIncreases.x() >= this.blockIds.length
+                                        || y - currRelIncreases.y() < 0
+                                        || y - currRelIncreases.y() >= this.blockIds[x].length
+                                        || z - currRelIncreases.z() < 0
+                                        || z - currRelIncreases.z() >= this.blockIds[x][y].length
                         ) {
+                            this.unDrawBlock(
+                                    worldLevel,
+                                    currAbsPos.x() + x - currRelIncreases.x(),
+                                    currAbsPos.y() + y - currRelIncreases.y(),
+                                    currAbsPos.z() + z - currRelIncreases.z()
+                            );
+                        }
+                        if (
+                                x < blockIds.length - currRelIncreases.x()
+                                        && x + currRelIncreases.x() < blockIds.length
+                                        && x + currRelIncreases.x() >= 0
+
+                                        && y < blockIds[x].length - currRelIncreases.y()
+                                        && y + currRelIncreases.y() < blockIds[x].length
+                                        && y + currRelIncreases.y() >= 0
+
+                                        && z < blockIds[x][y].length - currRelIncreases.z()
+                                        && z + currRelIncreases.z() < blockIds[x][y].length
+                                        && z + currRelIncreases.z() >= 0
+                        ) {
+                            if (blockIds[x][y][z] != blockIds
+                                    [(int) (x + currRelIncreases.x())]
+                                    [(int) (y + currRelIncreases.y())]
+                                    [(int) (z + currRelIncreases.z())]
+                            ) {
+                                this.drawBlock(
+                                        worldLevel,
+                                        currAbsPos.x() + x,
+                                        currAbsPos.y() + y,
+                                        currAbsPos.z() + z,
+                                        this.blockIds[x][y][z]
+                                );
+                            }
+                        } else {
                             this.drawBlock(
                                     worldLevel,
-                                    currAbsPos.getX() + x,
-                                    currAbsPos.getY() + y,
-                                    currAbsPos.getZ() + z,
+                                    currAbsPos.x() + x,
+                                    currAbsPos.y() + y,
+                                    currAbsPos.z() + z,
                                     this.blockIds[x][y][z]
                             );
                         }
-                    } else {
-                        this.drawBlock(
-                                worldLevel,
-                                currAbsPos.getX() + x,
-                                currAbsPos.getY() + y,
-                                currAbsPos.getZ() + z,
-                                this.blockIds[x][y][z]
-                        );
                     }
                 }
             }
         }
+        firstDraw = false;
         this.prevAbsPos = currAbsPos;
         this.movementVector.incrementAll();
     }
