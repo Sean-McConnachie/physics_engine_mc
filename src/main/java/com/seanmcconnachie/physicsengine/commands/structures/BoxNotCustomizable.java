@@ -2,6 +2,7 @@ package com.seanmcconnachie.physicsengine.commands.structures;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.seanmcconnachie.physicsengine.PhysicsEngine;
 import com.seanmcconnachie.physicsengine.physics.*;
@@ -28,37 +29,41 @@ public class BoxNotCustomizable {
                         .then(Commands.argument("pos", BlockPosArgument.blockPos())
                                 .then(Commands.argument("item1", ItemArgument.item(context))
                                         .then(Commands.argument("item2", ItemArgument.item(context))
-                                                .executes((command) -> addPhysicsBox(
-                                                        command.getSource(),
-                                                        BlockPosArgument.getLoadedBlockPos(command, "pos"),
-                                                        ItemArgument.getItem(command, "item1"),
-                                                        ItemArgument.getItem(command, "item2"),
-                                                        new Vec3(0f, 0f, 0f),
-                                                        new Vec3(0f, -9.81f, 0f),
-                                                        new Vec3(0f, 0f, 0f)
-                                                ))
-                                                .then(Commands.argument("velocity", Vec3Argument.vec3())
-                                                        .then(Commands.argument("acceleration", Vec3Argument.vec3())
-                                                                .executes((command) -> addPhysicsBox(
-                                                                        command.getSource(),
-                                                                        BlockPosArgument.getLoadedBlockPos(command, "pos"),
-                                                                        ItemArgument.getItem(command, "item1"),
-                                                                        ItemArgument.getItem(command, "item2"),
-                                                                        Vec3Argument.getVec3(command, "velocity"),
-                                                                        Vec3Argument.getVec3(command, "acceleration"),
-                                                                        new Vec3(0f, 0f, 0f)
-                                                                ))
-                                                                .then(Commands.argument("rotation", Vec3Argument.vec3())
+                                                .then(Commands.argument("energy_loss", FloatArgumentType.floatArg(0, 1))
+                                                        .executes((command) -> addPhysicsBox(
+                                                                command.getSource(),
+                                                                BlockPosArgument.getLoadedBlockPos(command, "pos"),
+                                                                ItemArgument.getItem(command, "item1"),
+                                                                ItemArgument.getItem(command, "item2"),
+                                                                FloatArgumentType.getFloat(command, "energy_loss"),
+                                                                new Vec3(0f, 0f, 0f),
+                                                                new Vec3(0f, -9.81f, 0f),
+                                                                new Vec3(0f, 0f, 0f)
+                                                        ))
+                                                        .then(Commands.argument("velocity", Vec3Argument.vec3())
+                                                                .then(Commands.argument("acceleration", Vec3Argument.vec3())
                                                                         .executes((command) -> addPhysicsBox(
                                                                                 command.getSource(),
                                                                                 BlockPosArgument.getLoadedBlockPos(command, "pos"),
                                                                                 ItemArgument.getItem(command, "item1"),
                                                                                 ItemArgument.getItem(command, "item2"),
+                                                                                FloatArgumentType.getFloat(command, "energy_loss"),
                                                                                 Vec3Argument.getVec3(command, "velocity"),
                                                                                 Vec3Argument.getVec3(command, "acceleration"),
-                                                                                Vec3Argument.getVec3(command, "rotation")
+                                                                                new Vec3(0f, 0f, 0f)
                                                                         ))
-                                                        ))))))));
+                                                                        .then(Commands.argument("rotation", Vec3Argument.vec3())
+                                                                                .executes((command) -> addPhysicsBox(
+                                                                                        command.getSource(),
+                                                                                        BlockPosArgument.getLoadedBlockPos(command, "pos"),
+                                                                                        ItemArgument.getItem(command, "item1"),
+                                                                                        ItemArgument.getItem(command, "item2"),
+                                                                                        FloatArgumentType.getFloat(command, "energy_loss"),
+                                                                                        Vec3Argument.getVec3(command, "velocity"),
+                                                                                        Vec3Argument.getVec3(command, "acceleration"),
+                                                                                        Vec3Argument.getVec3(command, "rotation")
+                                                                                ))
+                                                                        )))))))));
     }
 
     private static int addPhysicsBox(
@@ -66,6 +71,7 @@ public class BoxNotCustomizable {
             BlockPos pos,
             ItemInput item1,
             ItemInput item2,
+            float energyLoss,
             Vec3 initialVelsVec,
             Vec3 gravityVec,
             Vec3 rotationVec
@@ -90,12 +96,14 @@ public class BoxNotCustomizable {
         };
 
         PointsStorage points = new PointsStorage(blockIds);
+        points.rotatePoints(rotation);
 
         MovingStructure structure = new MovingStructure(
                 player.level,
                 player,
                 movementV,
-                points);
+                points,
+                energyLoss);
         PhysicsEngine.movingStructures.add(structure);
 
         System.out.println("Created and dropping structure.");

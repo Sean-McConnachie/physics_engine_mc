@@ -14,14 +14,21 @@ public class MovementDataAxis implements java.io.Serializable {
         this.Acceleration = acceleration;
     }
 
-    public int calculateRelativeDistance() {
+    public int calculateRelativeDistance(int relativeTick) {
+        int currTick = this.Tick + relativeTick;
         // s = ut + 1/2at^2
         // ticks -> seconds = tick * 0.05
-        return (int) Math.round((this.initialVelocity * this.Tick * 0.05) + (0.5 * this.Acceleration * Math.pow(this.Tick * 0.05, 2)));
+        return (int) Math.round((this.initialVelocity * currTick * 0.05) + (0.5 * this.Acceleration * Math.pow(currTick * 0.05, 2)));
     }
 
-    public long calculateAbsoluteDistance() {
-        return this.lastPos + this.calculateRelativeDistance();
+    public double calculateVelocity(int relativeTick) {
+        int currTick = this.Tick + relativeTick;
+        // u = v + atz
+        return this.initialVelocity + (this.Acceleration * currTick * 0.05);
+    }
+
+    public long calculateAbsoluteDistance(int relativeTick) {
+        return this.lastPos + this.calculateRelativeDistance(relativeTick);
     }
 
     // Getters and Setters =============================================================================================
@@ -29,9 +36,10 @@ public class MovementDataAxis implements java.io.Serializable {
         this.Tick++;
     }
 
-    public void onImpact(int newPos) {
+    public void onImpact(long newPos, double newVelocity) {
         this.lastPos = newPos;
         this.Tick = 0;
+        this.initialVelocity = newVelocity;
     }
 
     public long getLastPos() {
