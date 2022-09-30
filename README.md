@@ -48,6 +48,13 @@ like to add `stl`/`obj` support to allow importing of 3d models from a URL.
 Download [Minecraft Forge 1.19.2](https://files.minecraftforge.net/net/minecraftforge/forge/index_1.19.2.html) and place
 the `.jar` found in `/builds` into the `mods` folder. Then run Minecraft.
 
+### How blocks are updated
+After some testing I found that drawing and undrawing (i.e. placing and breaking) blocks is quite an expensive operation.
+Therefore, the `MovingStructure` (see `update` function) uses logic to determine whether or not the previous location of the structure has any
+overlapping blocks with the current location with the strucutre. Subsequently, only the required blocks are updated and
+delete. This was about 50x more performant than redrawing the whole structure. It can also do this in any direction/change
+in direction.
+
 ### Future versions
 - Add `stl`/`obj` support
 - For `obj`s add texture support
