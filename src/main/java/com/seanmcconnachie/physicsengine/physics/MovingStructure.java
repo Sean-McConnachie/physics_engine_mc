@@ -219,7 +219,7 @@ public class MovingStructure extends MovementProperties implements MovementBase,
         this.firstDraw = false;
         this.prevAbsPos = currAbsPos;
         i++;
-        if (i % (2*20) == 0) {
+        if (i % (5*20) == 0) {
             points.rotatePoints(new ThreeFloats(180, 90, 90));
         }
     }

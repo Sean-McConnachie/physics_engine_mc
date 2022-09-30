@@ -23,7 +23,7 @@ public class MovementDataAxis implements java.io.Serializable {
 
     public double calculateVelocity(int relativeTick) {
         int currTick = this.Tick + relativeTick;
-        // u = v + atz
+        // u = v + at
         return this.initialVelocity + (this.Acceleration * currTick * 0.05);
     }
 
