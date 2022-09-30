@@ -51,3 +51,5 @@ the `.jar` found in `/builds` into the `mods` folder. Then run Minecraft.
 ### Future versions
 - Add `stl`/`obj` support
 - For `obj`s add texture support
+
+© 2022 Sean McConnachie. All rights reserved
